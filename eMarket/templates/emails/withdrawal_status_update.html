@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; }
+    .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .status { font-weight: bold; color: {% if status == 'Approved' %}green{% else %}red{% endif %}; }
+    .footer { font-size: 13px; color: #777; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Withdrawal Request {{ status }}</h2>
+    <p>Dear {{ vendor.business_name }},</p>
+    <p>Your withdrawal request of <strong>PKR {{ amount|floatformat:2 }}</strong> has been 
+       <span class="status">{{ status }}</span>.</p>
+
+    <p>Time of update: {{ timestamp|date:"Y-m-d H:i" }}</p>
+
+    {% if status == 'Rejected' %}
+    <p>If you believe this was a mistake, please contact our support team.</p>
+    {% endif %}
+
+    <p>Thank you for using <strong>eMarket</strong>.</p>
+
+    <div class="footer">
+      &copy; {{ timestamp|date:"Y" }} eMarket. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

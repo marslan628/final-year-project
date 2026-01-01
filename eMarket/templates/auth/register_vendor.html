@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Vendor Register{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="card p-4 shadow-lg">
+    <h3 class="mb-4">Vendor Registration</h3>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ user_form|crispy }}
+      {{ vendor_form|crispy }}
+      <button type="submit" class="btn btn-success">Register</button>
+    </form>
+  </div>
+</div>
+{% include "includes/footer.html" %}
+{% endblock %}

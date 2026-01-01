@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: white;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    height: 100%;
+    min-height: 100vh;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .order-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .order-actions {
+    margin-top: 10px;
+  }
+
+</style>
+<div class="container-fluid mt-4">
+  <div class="row">
+        <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+          <img src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" class="user-img" alt="User Image">
+          <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+   {% endif %}
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+    <div class="col-lg-9">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">{{ title }}</h4>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'vendor_list' %}" class="btn btn-secondary">Cancel</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

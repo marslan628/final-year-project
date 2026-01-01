@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Vendor Payment Details | eMarket{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: #fff;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+
+  .form-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .alert {
+    font-size: 0.95rem;
+  }
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: white;
+    height: 100%%;
+    position: sticky;
+    top: 0;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%%;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar p-3 bg-white shadow-sm rounded">
+        <div class="text-center">
+          <img src="{% static 'images/default-user.png' %}" class="user-img mb-2" alt="User Image">
+          <h5>{{ request.user.username }}</h5>
+          <p class="small text-muted">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+                   {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+  {% endif %}
+        </div>
+        <hr>
+        {% include 'includes/sidebar_vendor.html' %}
+      </div>
+    </div>
+
+    <!-- Main Form Section -->
+    <div class="col-lg-9">
+      <div class="form-section">
+        <h4 class="mb-4">Payment Details</h4>
+{% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        {% if not request.user.vendor.is_bank_info_complete %}
+        <div class="alert alert-warning d-flex align-items-center">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <div>Your bank/payment details are incomplete. Please update them below.</div>
+        </div>
+        {% elif not request.user.vendor.is_payment_info_verified %}
+        <div class="alert alert-info d-flex align-items-center">
+          <i class="bi bi-hourglass-split me-2"></i>
+          <div>Your payment information is pending verification by admin.</div>
+        </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="bank_name" class="form-label">Bank Name</label>
+              <input type="text" class="form-control" name="bank_name" value="{{ vendor.bank_name }}" required>
+            </div>
+            <div class="col-md-6">
+              <label for="account_holder_name" class="form-label">Account Holder Name</label>
+              <input type="text" class="form-control" name="account_holder_name" value="{{ vendor.account_holder_name }}" required>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="account_number" class="form-label">Account Number</label>
+              <input type="text" class="form-control" name="account_number" value="{{ vendor.account_number }}" required>
+            </div>
+            <div class="col-md-6">
+              <label for="swift_code" class="form-label">SWIFT Code</label>
+              <input type="text" class="form-control" name="swift_code" value="{{ vendor.swift_code }}" required>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="preferred_payment_method" class="form-label">Preferred Payment Method</label>
+            <select class="form-select" name="preferred_payment_method" required>
+              <option value="">-- Select --</option>
+              <option value="Bank Transfer" {% if vendor.preferred_payment_method == "Bank Transfer" %}selected{% endif %}>Bank Transfer</option>
+              <option value="PayPal" {% if vendor.preferred_payment_method == "PayPal" %}selected{% endif %}>PayPal</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Payment Details</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% include 'includes/footer.html' %}
+{% endblock %}

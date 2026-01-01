@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Admin Coupon List{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    border: 1px solid #eee;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 3px solid #dee2e6;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .sidebar .nav-link {
+    color: #333;
+    font-weight: 500;
+    padding: 10px 0;
+    display: block;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    color: #BB2D3B;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: none;
+  }
+
+  .dashboard-metric {
+    border-radius: 16px;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+  }
+
+  .dashboard-metric h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .dashboard-metric p {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4">
+      <div class="sidebar p-4 bg-white shadow-sm rounded-4">
+        <div class="text-center">
+          <img src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" class="user-img mb-3" alt="User Image">
+          <h5 class="mb-1">{{ request.user.username }}</h5>
+          <p class="text-muted small mb-1">{{ request.user.email }}</p>
+          <p class="small text-muted mb-1">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+            <p class="small text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+          {% else %}
+            <p class="small text-muted">First login detected</p>
+          {% endif %}
+        </div>
+        <hr>
+        <div class="nav flex-column">
+          {% include 'includes/sidebar_admin.html' %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+          <input type="text" name="q" class="form-control" placeholder="Search by code" value="{{ query }}">
+        </div>
+        <div class="col-md-2">
+          <select name="status" class="form-select">
+            <option value="">All Statuses</option>
+            <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+        </div>
+        <div class="col-md-2">
+          <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-dark w-100"><i class="bi bi-funnel-fill me-1"></i>Filter</button>
+        </div>
+      </form>
+
+      <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0">All Coupons</h4>
+          <a href="{% url 'admin-coupon-create' %}" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>New Coupon</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Type</th>
+                <th>Min Amount</th>
+                <th>Valid</th>
+                <th>Uses</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for coupon in coupons %}
+              <tr>
+                <td><strong>{{ coupon.code }}</strong></td>
+                <td>
+                  {% if coupon.discount_type == 'percentage' %}
+                    {{ coupon.discount }}%
+                  {% else %}
+                    PKR{{ coupon.discount }}
+                  {% endif %}
+                </td>
+                <td class="text-capitalize">{{ coupon.discount_type }}</td>
+                <td>PKR {{ coupon.min_cart_amount }}</td>
+                <td>{{ coupon.valid_from|date:"M d, Y" }} - {{ coupon.valid_to|date:"M d, Y" }}</td>
+                <td>{{ coupon.uses_count }}/{{ coupon.max_uses }}</td>
+                <td>
+                  <button type="button" class="btn btn-sm {% if coupon.active %}btn-success{% else %}btn-secondary{% endif %} toggle-status-btn" data-id="{{ coupon.id }}">
+                    {% if coupon.active %}Active{% else %}Inactive{% endif %}
+                  </button>
+                </td>
+                <td>
+                  <a href="{% url 'admin-coupon-edit' coupon.id %}" class="btn btn-sm btn-primary">Edit</a>
+                  <a href="{% url 'admin-coupon-delete' coupon.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this coupon?');">Delete</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="8" class="text-center text-muted">No coupons found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-3">
+          {% if coupons.has_other_pages %}
+            <ul class="pagination">
+              {% if coupons.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ coupons.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Previous</a>
+                </li>
+              {% endif %}
+              <li class="page-item active"><span class="page-link">{{ coupons.number }}</span></li>
+              {% if coupons.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ coupons.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Next</a>
+                </li>
+              {% endif %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const id = this.dataset.id;
+      const originalText = this.textContent;
+      this.textContent = '...';
+      fetch("{% url 'admin-coupon-toggle-status' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({ id })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          this.classList.toggle('btn-success');
+          this.classList.toggle('btn-secondary');
+          this.textContent = data.new_status ? 'Active' : 'Inactive';
+        } else {
+          this.textContent = originalText;
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

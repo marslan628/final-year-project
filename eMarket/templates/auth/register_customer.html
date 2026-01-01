@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Customer Register{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="card p-4 shadow-lg">
+    <h3 class="mb-4">Customer Registration</h3>
+    <form method="post">
+      {% csrf_token %}
+      {{ user_form|crispy }}
+      <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+  </div>
+
+</div>
+{% include "includes/footer.html" %}
+{% endblock %}

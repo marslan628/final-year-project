@@ -1,0 +1,54 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <div class="container-fluid px-4">
+
+    <!-- Left: Main navigation -->
+    <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex align-items-center">
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'home' %} active text-dark text-danger border-bottom border-2 border-danger {% endif %}" href="{% url 'home' %}">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'shop' %}active text-dark text-danger border-bottom border-2 border-danger {% endif %}" href="{% url 'shop' %}">Shop</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active text-dark text-danger border-bottom border-2 border-danger {% endif %}" href="{% url 'contact' %}">Contact Us</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'about_us' %}active text-dark text-danger border-bottom border-2 border-danger {% endif %}" href="{% url 'about_us' %}">About Us</a>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
+          Vendor
+        </a>
+        <ul class="dropdown-menu">
+          <li class="dropdown-header text-muted fw-semibold">Vendor Panel</li>
+        <li><a class="dropdown-item" href="{% url 'vendor_dashboard' %}"><i class="fas fa-store me-2"></i>Dashboard</a></li>
+        <li><a class="dropdown-item" href="{% url 'edit_vendor_profile' %}"><i class="fas fa-user-edit me-2"></i>Edit Profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'product_dashboard' %}"><i class="fas fa-box me-2"></i>My Products</a></li>
+        <li><a class="dropdown-item" href="{% url 'vendor_manage_orders' %}"><i class="fas fa-shopping-cart me-2"></i>Customer Orders</a></li>
+        <li><a class="dropdown-item" href="{% url 'vendor_earnings' %}"><i class="fas fa-wallet me-2"></i>Earnings</a></li>
+        <li><a class="dropdown-item" href="{% url 'payment_history' %}"><i class="fas fa-credit-card me-2"></i>Payments</a></li>
+        <li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="{% url 'receipt_input' %}">Print Receipt</a>
+      </li>
+    </ul>
+
+    <!-- Right: Utility links -->
+    <ul class="navbar-nav d-flex align-items-center gap-3">
+      <li class="nav-item d-flex align-items-center">
+        <i class="fas fa-map-marker-alt me-1 text-dark"></i>
+        <a class="nav-link {% if request.resolver_match.url_name == 'track_order' %}active text-dark text-danger border-bottom border-2 border-danger {% endif %}" href="{% url 'track_order' %}">Track Order</a>
+      </li>
+      <li class="nav-item d-flex align-items-center">
+        <i class="fas fa-question-circle me-1 text-dark"></i>
+        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active text-dark text-danger border-bottom border-2 border-danger {% endif %}" href="{% url 'contact' %}">Help Center</a>
+      </li>
+      
+      
+    </ul>
+  </div>
+</nav>

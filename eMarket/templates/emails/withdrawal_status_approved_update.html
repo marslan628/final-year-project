@@ -1,0 +1,16 @@
+Dear {{ vendor.business_name }},
+
+We’re pleased to inform you that your withdrawal request of PKR {{ amount|floatformat:2 }} has been approved.
+<br>
+Details:
+- Amount: PKR {{ amount|floatformat:2 }}
+- Status: Approved
+- Date: {{ timestamp|date:"Y-m-d H:i" }}
+<br>
+The requested amount will be processed and transferred to your bank account as per our standard timeline.
+
+Thank you for partnering with eMarket.
+
+Best regards,  
+eMarket Team  
+{{ settings.DEFAULT_FROM_EMAIL }}

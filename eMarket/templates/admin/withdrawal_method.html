@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Vendor Withdrawal Preferences | Admin Panel{% endblock %}
+
+{% block content %}
+
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: #fff;
+    padding: 25px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .sidebar .nav-link {
+    display: block;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 3px solid #dee2e6;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: none;
+  }
+  .badge {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+          <img src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" alt="User Image" class="user-img">
+          <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+            {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+   {% endif %}
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+      <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="mb-0">Vendor Withdrawal Preferences</h4>
+        </div>
+
+        {% if vendors %}
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle text-nowrap">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Business Name</th>
+                <th>Email</th>
+                <th>Bank</th>
+                <th>Account Holder</th>
+                <th>Account Number</th>
+                <th>SWIFT</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for vendor in vendors %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ vendor.business_name }}</td>
+                <td>{{ vendor.user.email }}</td>
+                <td>{{ vendor.bank_name }}</td>
+                <td>{{ vendor.account_holder_name }}</td>
+                <td>{{ vendor.account_number }}</td>
+                <td>{{ vendor.swift_code }}</td>
+                <td>PKR {{ vendor.available_balance }}</td>
+                <td>
+                  {% if vendor.is_payment_info_verified %}
+                    <span class="badge bg-success">Approved</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <form method="post" action="{% url 'approve_vendor_payment_info' vendor.id %}" class="d-inline">
+                    {% csrf_token %}
+                    {% if not vendor.is_payment_info_verified %}
+                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-sm btn-warning" name="action" value="reject">Reject</button>
+                    {% endif %}
+                  </form>
+                  <a href="{% url 'edit_vendor_bank_details' vendor.id %}" class="btn btn-sm btn-primary">Edit</a>
+
+                  <!-- Delete Button triggers modal -->
+                  <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ vendor.id }}">
+                    Delete
+                  </button>
+
+                  <!-- Modal -->
+                  <div class="modal fade" id="deleteModal{{ vendor.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ vendor.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content border-0 rounded-3 shadow">
+                        <div class="modal-header bg-danger text-white">
+                          <h5 class="modal-title" id="deleteModalLabel{{ vendor.id }}">Confirm Deletion</h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          Are you sure you want to delete <strong>{{ vendor.business_name }}</strong>'s bank details?
+                          <p class="text-danger small mt-2">This action cannot be undone.</p>
+                        </div>
+                        <div class="modal-footer">
+                          <form action="{% url 'delete_vendor_bank_details' vendor.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if vendors.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ vendors.previous_page_number }}">Previous</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for num in vendors.paginator.page_range %}
+              <li class="page-item {% if vendors.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endfor %}
+
+            {% if vendors.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ vendors.next_page_number }}">Next</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% else %}
+          <p class="text-center text-muted mt-4">No vendor withdrawal preferences found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+  {% for message in messages %}
+  <div class="toast align-items-center text-white bg-{{ message.tags }} border-0 show mb-2" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% include 'includes/footer.html' %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

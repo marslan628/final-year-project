@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Track Your Order{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: #fff;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+
+  .detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+  }
+
+  .timeline {
+    list-style: none;
+    padding-left: 0;
+    position: relative;
+  }
+
+  .timeline:before {
+    content: '';
+    position: absolute;
+    left: 18px;
+    width: 2px;
+    height: 100%;
+    background: #dee2e6;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 20px;
+  }
+
+  .timeline-item:before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #BB2D3B;
+  }
+
+  .status-btns button {
+    margin-right: 10px;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<div class="container py-5">
+    
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8" >
+      <div class="card shadow rounded-4 border-0" >
+        <div class="card-header  text-white py-3 rounded-top-4" style="background-color:#BB2D3B;">
+          <h4 class="mb-0"><i class="bi bi-truck me-2"></i>Track Your Order</h4>
+        </div>
+        <div class="card-body">
+
+          <form method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="query" class="form-label fw-semibold">Order ID or Email</label>
+              <input type="text" name="query" class="form-control shadow-sm" placeholder="Enter Order ID or Email" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="background-color:#BB2D3B;">Track Order</button>
+          </form>
+
+          {% if order %}
+          <div class="border-top pt-3">
+            <h5 class="fw-semibold mb-3">Order Details</h5>
+            <ul class="list-group mb-3">
+              <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
+              <li class="list-group-item"><strong>Customer:</strong> {{ order.full_name }}</li>
+              <li class="list-group-item"><strong>Email:</strong> {{ order.email }}</li>
+              <li class="list-group-item"><strong>Phone:</strong> {{ order.phone }}</li>
+              <li class="list-group-item"><strong>Status:</strong> {{ order.status }}</li>
+              <li class="list-group-item"><strong>Total:</strong> PKR {{ order.total_amount }}</li>
+              <li class="list-group-item"><strong>Placed on:</strong> {{ order.created_at|date:"F d, Y" }}</li>
+            </ul>
+
+            <h5 class="fw-semibold mb-3">Shipment Info</h5>
+            <ul class="list-group mb-3">
+              <li class="list-group-item"><strong>Courier:</strong> {{ order.courier|default:"N/A" }}</li>
+              <li class="list-group-item"><strong>Tracking Number:</strong> {{ order.tracking_number|default:"N/A" }}</li>
+              
+              <li class="list-group-item"><strong>Shipped Date:</strong> {{ order.shipped_at|default:"N/A"}}</li>
+              <li class="list-group-item"><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|date:"F d, Y" }}</li>
+              <li class="list-group-item"><strong>Delivery Date:</strong> {{ order.delivered_at|default:"N/A"}}</li>
+            </ul>
+
+            <div class="mb-4">
+              <div class="progress" style="height: 20px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                  style="width: {{ order.progress }}%;" aria-valuenow="{{ order.progress }}" aria-valuemin="0" aria-valuemax="100">
+                  {{ order.status }}
+                </div>
+              </div>
+            </div>
+              
+            <h5 class="fw-semibold mb-3">Ordered Items</h5>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Product</th>
+                    <th>Image</th>
+                    <th>Color</th>
+                    <th>Size</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in order.items.all %}
+                  <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>
+                      {% if item.product.image %}
+                      <img src="{{ item.product.image.url }}" width="60" class="rounded" alt="{{ item.product.name }}">
+                      {% else %}
+                      <span class="text-muted">No Image</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ item.color|default:"-" }}</td>
+                    <td>{{ item.size|default:"-" }}</td>
+                    <td>PKR {{ item.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>PKR {{ item.quantity|multiply:item.price }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <h5>Order Timeline</h5>
+        <ul class="timeline">
+          <li class="timeline-item"><strong>Placed:</strong> {{ order.created_at|date:"M d, Y H:i A" }}</li>
+          {% if order.shipped_at %}
+          <li class="timeline-item"><strong>Shipped:</strong> {{ order.shipped_at|date:"M d, Y H:i A" }}</li>
+          {% endif %}
+          {% if order.delivered_at %}
+          <li class="timeline-item"><strong>Delivered:</strong> {{ order.delivered_at|date:"M d, Y H:i A" }}</li>
+          {% endif %}
+        </ul>
+            </div>
+            
+          </div>
+
+          {% elif searched %}
+          <div class="alert alert-warning mt-4">No order found with that Order ID or Email.</div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include 'includes/footer.html'%}
+{% endblock %}

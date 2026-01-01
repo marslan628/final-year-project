@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }} Details | eMarket{% endblock %}
+{% load static %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: #fff;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+
+  .detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+  }
+
+  .timeline {
+    list-style: none;
+    padding-left: 0;
+    position: relative;
+  }
+
+  .timeline:before {
+    content: '';
+    position: absolute;
+    left: 18px;
+    width: 2px;
+    height: 100%;
+    background: #dee2e6;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 20px;
+  }
+
+  .timeline-item:before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #0d6efd;
+  }
+
+  .status-btns button {
+    margin-right: 10px;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar p-3 bg-white shadow-sm rounded">
+        <div class="text-center">
+             <img 
+        src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+        alt="User Image" 
+        class="user-img"
+      > <h5>{{ request.user.username }}</h5>
+          <p class="small text-muted">{{ request.user.email }}</p>
+              <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+   {% endif %}
+      
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+
+    <!-- Main Order Details -->
+    <div class="col-lg-9">
+      <div class="detail-card">
+        <h4>Order #{{ order.id }} <span class="badge bg-info">{{ order.status }}</span></h4>
+        <p class="text-muted">{{ order.created_at|date:"M d, Y H:i A" }}</p>
+
+       <div class="status-btns my-3">
+  <!-- Mark as Processing -->
+<form method="post" style="display: inline;">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="mark_processing">
+  <button class="btn btn-outline-warning btn-sm" {% if order.status != 'Pending' %}disabled{% endif %}>
+      Mark as Processing
+  </button>
+</form>
+
+<!-- Mark as Shipped -->
+<form method="post" style="display: inline;">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="mark_shipped">
+  <button class="btn btn-outline-primary btn-sm" {% if order.status != 'Processing' %}disabled{% endif %}>
+    Mark as Shipped
+  </button>
+</form>
+
+<!-- Mark as Delivered -->
+<form method="post" style="display: inline;">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="mark_delivered">
+  <button class="btn btn-outline-success btn-sm" {% if order.status != 'Shipped' %}disabled{% endif %}>
+    Mark as Delivered
+  </button>
+</form>
+
+<!-- Cancel Order -->
+<form method="post" style="display: inline;">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="cancel_order">
+  <button class="btn btn-outline-danger btn-sm" {% if order.status not in 'Pending,Processing' %}disabled{% endif %}>
+    Cancel Order
+  </button>
+</form>
+
+<!-- Update Shipping Info -->
+<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#updateShippingModal">
+  Update Shipping Info
+</button>
+
+
+
+        <hr>
+
+        <h5>Product Details</h5>
+        {% for item in order_items %}
+        <p><strong>Product:</strong> {{ item.product.name }}</p>
+        <p><strong>Variant:</strong>
+          {% if item.variant_color %}Color -  {{ item.variant_color.color_name|default:"N/A"  }}{% endif %}
+          {% if item.variant_size %}, Size - {{ item.variant_size.size_label|default:"N/A"  }}{% endif %}
+        </p>
+        <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+        <p><strong>Price:</strong> PKR {{ order.total_amount }}</p>
+        <hr>
+        {% endfor %}
+
+        <h5>Shipping Info</h5>
+        <p><strong>Courier:</strong> {{ order.courier|default:"N/A" }}</p>
+        <p><strong>Tracking #:</strong> {{ order.tracking_number|default:"N/A" }}</p>
+        <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|date:"M d, Y"|default:"N/A" }}</p>
+
+        <hr>
+        <h5>Customer Info</h5>
+        <p><strong>Name:</strong> {{ order.full_name }}</p>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Phone:</strong> {{ order.phone }}</p>
+        <p><strong>Address:</strong> {{ order.address }}, {{ order.city }}, {{ order.zip_code }}</p>
+
+        <hr>
+        <h5>Order Timeline</h5>
+        <ul class="timeline">
+          <li class="timeline-item"><strong>Placed:</strong> {{ order.created_at|date:"M d, Y H:i A" }}</li>
+          {% if order.shipped_at %}
+          <li class="timeline-item"><strong>Shipped:</strong> {{ order.shipped_at|date:"M d, Y H:i A" }}</li>
+          {% endif %}
+          {% if order.delivered_at %}
+          <li class="timeline-item"><strong>Delivered:</strong> {{ order.delivered_at|date:"M d, Y H:i A" }}</li>
+          {% endif %}
+        </ul>
+
+        <a href="{% url 'admin_manage_orders' %}" class="btn btn-secondary mt-4">Back to Orders</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Shipping Info Modal -->
+<div class="modal fade" id="updateShippingModal" tabindex="-1" aria-labelledby="updateShippingModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_shipping">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateShippingModalLabel">Update Shipping Info</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="courier" class="form-label">Courier</label>
+            <input type="text" class="form-control" id="courier" name="courier" value="{{ order.courier }}">
+          </div>
+          <div class="mb-3">
+            <label for="tracking_number" class="form-label">Tracking Number</label>
+            <input type="text" class="form-control" id="tracking_number" name="tracking_number" value="{{ order.tracking_number }}">
+          </div>
+          <div class="mb-3">
+            <label for="estimated_delivery" class="form-label">Estimated Delivery</label>
+            <input type="date" class="form-control" id="estimated_delivery" name="estimated_delivery" value="{{ order.estimated_delivery|date:'Y-m-d' }}">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{%include 'includes/footer.html'%}
+{% endblock %}

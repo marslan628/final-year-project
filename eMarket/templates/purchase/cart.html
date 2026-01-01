@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% block title %}Your Cart{% endblock %}
+{% load static %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f9f9f9;
+    }
+
+    :root {
+        --primary-color: #BB2D3B;
+    }
+
+    .btn-primary-custom {
+        background-color: var(--primary-color);
+        border: none;
+        color: white;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: #a32632;
+    }
+
+    .text-primary-custom {
+        color: var(--primary-color) !important;
+    }
+
+    .cart-card {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+    }
+
+    .table th, .table td {
+        vertical-align: middle !important;
+    }
+
+    .img-thumbnail {
+        border-radius: 8px;
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        transition: transform 0.2s ease;
+    }
+
+    .img-thumbnail:hover {
+        transform: scale(1.05);
+    }
+
+    .input-group input {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .input-group .btn {
+        border-radius: 0 8px 8px 0;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+    }
+
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .alert {
+        border-radius: 10px;
+    }
+
+    .order-summary .list-group-item {
+        background-color: transparent;
+        border: none;
+    }
+
+    .order-summary .fw-bold {
+        font-weight: 600 !important;
+    }
+
+    .cart-title {
+        font-weight: 600;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary-custom cart-title">🛒 Shopping Cart</h2>
+        <a href="{% url 'shop' %}" class="btn btn-outline-secondary">← Continue Shopping</a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% if items %}
+    <div class="cart-card mb-5">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th>Variants</th>
+                        <th>Unit Price</th>
+                        <th>Qty</th>
+                        <th>Subtotal</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="fw-semibold text-start d-flex align-items-center gap-3 px-3">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-thumbnail">
+                            <div>
+                                {{ item.product.name }}<br>
+                                {% if item.product.stock > 0 %}
+                                    <span class="badge bg-success mt-1">In Stock</span>
+                                {% else %}
+                                    <span class="badge bg-danger mt-1">Out of Stock</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted">Est. delivery: 3-5 days</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="mt-1">
+                                {% if item.color %}
+                                    <span class="badge bg-light text-dark me-1">Color: {{ item.color.name }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-white me-1">Color: Default</span>
+                                {% endif %}
+                                {% if item.size %}
+                                    <span class="badge bg-light text-dark">Size: {{ item.size.name }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-white">Size: Default</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>PKR {{ item.product.base_price|floatformat:2 }}</td>
+                        <td>
+                            <form method="post" action="{% url 'update_cart_item' item.id %}" class="d-flex justify-content-center align-items-center">
+                                {% csrf_token %}
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control form-control-sm me-2" style="width: 80px;">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                            </form>
+                        </td>
+                        <td>PKR {{ item.total_price|floatformat:2 }}</td>
+                        <td><a href="{% url 'remove_cart_item' item.id %}" class="btn btn-sm btn-outline-danger">Remove</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Coupon and Order Summary Row -->
+    <div class="row g-4">
+        <!-- Coupon Column -->
+        <div class="col-lg-6">
+            <div class="cart-card p-3 border rounded shadow-sm">
+                <h5 class="mb-3">Have a Coupon?</h5>
+                <form method="post" action="{% url 'apply_coupon' %}" class="input-group">
+                    {% csrf_token %}
+                    <input type="text" name="coupon_code" class="form-control" placeholder="Enter Coupon Code" required>
+                    <button class="btn btn-primary-custom" type="submit">Apply</button>
+                </form>
+                {% if cart.coupon %}
+                <div class="alert alert-info d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        🎉 Coupon <strong>{{ cart.coupon.code }}</strong> applied –
+                        <span class="text-success">You saved {{ cart.coupon.discount_amount }}</span>
+                    </div>
+                    <a href="{% url 'remove_coupon' %}" class="btn btn-sm btn-outline-danger ms-3">Remove</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Order Summary Column -->
+        <div class="col-lg-6">
+            <div class="cart-card order-summary">
+                <h5 class="text-primary-custom mb-3">Order Summary</h5>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span>PKR {{ cart.subtotal|floatformat:2 }}</span>
+                    </li>
+                    {% if cart.coupon %}
+                    <li class="list-group-item d-flex justify-content-between text-success">
+                        <span>Discount ({{ cart.coupon.code }}):</span>
+                        <span>− PKR {{ cart.coupon.discount|floatformat:2 }}</span>
+                    </li>
+                    {% endif %}
+                    <li class="list-group-item d-flex justify-content-between fw-bold">
+                        <span>Total:</span>
+                        <span>PKR {{ cart.total|floatformat:2 }}</span>
+                    </li>
+                </ul>
+                <div class="text-end mt-3">
+                    <a href="{% url 'checkout' %}" class="btn btn-primary-custom px-4 py-2">Proceed to Checkout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-info text-center">Your cart is currently empty.</div>
+    {% endif %}
+</div>
+{% endblock %}

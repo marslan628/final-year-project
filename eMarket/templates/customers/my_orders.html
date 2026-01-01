@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Orders | eMarket{% endblock %}
+
+{% block content %}
+<style>
+     body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: white;
+    height: 100%;
+    position: sticky;
+    top: 0;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .card-metric {
+    border: none;
+    border-radius: 10px;
+    padding: 25px 20px;
+    text-align: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+  .dashboard-cards .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out;
+  }
+  .dashboard-cards .card:hover {
+    transform: translateY(-3px);
+  }
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-list {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .order-summary {
+    cursor: pointer;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: white;
+    border-radius: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .order-summary:hover, .order-summary.active {
+    background-color: #e8f0fe;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-details {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .badge-status {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
+
+  .order-items li {
+    list-style: none;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .fade-panel {
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+</style>
+
+<div class="container-fluid py-4">
+  <div class="row">
+    <!-- User Sidebar -->
+    <div class="col-md-3 sidebar">
+      <div class="text-center mb-4">
+        <img 
+        src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+        alt="User Image" 
+        class="user-img"
+      ><h5>{{ request.user.username }}</h5>
+        <p class="text-muted small">{{ request.user.email }}</p>
+        <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+  {% endif %}
+      </div>
+      <hr>
+      {% include 'includes/sidebar_user.html' %}
+    </div>
+
+    <!-- Order Column Layout -->
+    <div class="col-md-9">
+      <h3 class="fw-bold mb-4">My Orders</h3>
+
+      {% if orders %}
+        <div class="row">
+          <!-- Left Column: Order Summaries -->
+          <div class="col-md-4 order-list">
+            {% for order in orders %}
+              <div class="order-summary" data-order-id="{{ order.id }}">
+                <h6 class="mb-1">Order #{{ order.id }}</h6>
+                 
+                <span class="badge badge-status 
+                  {% if order.status == 'Delivered' %}bg-success
+                  {% elif order.status == 'Cancelled' %}bg-danger
+                  {% elif order.status == 'Shipped' %}bg-info text-dark
+                  {% else %}bg-warning text-dark{% endif %}"> 
+                  {{ order.status }}
+                </span>
+                <p class="mb-0 mt-2"><small>{{ order.created_at|date:"M d, Y" }}</small></p>
+              </div>
+            {% endfor %}
+          </div>
+
+         <!-- Right Column: Dynamic Order Details with Table, Icons, Fade-in, and Reorder -->
+<div class="col-md-8">
+  {% for order in orders %}
+    <div class="order-details d-none fade-panel" id="order-{{ order.id }}">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5><i class="bi bi-receipt"></i> Order #{{ order.id }}</h5>
+        <span class="badge badge-status 
+          {% if order.status == 'Delivered' %}bg-success
+          {% elif order.status == 'Cancelled' %}bg-danger
+          {% elif order.status == 'Shipped' %}bg-info text-dark
+          {% else %}bg-warning text-dark{% endif %}">
+          {{ order.status }}
+        </span>
+      </div>
+
+      <table class="table table-bordered table-striped">
+        <tbody>
+          <tr>
+            <th><i class="bi bi-calendar-event"></i> Order Date</th>
+            <td>{{ order.created_at|date:"F d, Y" }}</td>
+          </tr>
+          <tr>
+            <th><i class="bi bi-truck"></i> Estimated Delivery</th>
+            <td>{{ order.estimated_delivery|date:"F d, Y" }}</td>
+          </tr>
+          <tr>
+            <th><i class="bi bi-currency-dollar"></i> Total Amount</th>
+            <td>PKR {{ order.total_amount }}</td>
+          </tr>
+          <tr>
+            <th><i class="bi bi-geo-alt"></i> Shipping Address</th>
+            <td>{{ order.full_name }}, {{ order.address }}, {{ order.city }} - {{ order.zip_code }}</td>
+          </tr>
+          <tr>
+            <th><i class="bi bi-credit-card"></i> Payment Status</th>
+            <td>
+              {% if order.payment.payment_status == 'Success' %}
+                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Paid</span>
+              {% else %}
+                <span class="text-warning"><i class="bi bi-exclamation-circle-fill"></i> {{ order.payment.payment_status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th><i class="bi bi-wallet2"></i> Payment Method</th>
+            <td>Credit/Debit Card</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h6 class="mt-4"><i class="bi bi-box-seam"></i> Items Ordered:</h6>
+      <table class="table table-sm table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Color</th>
+            <th>Size</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+            <tr>
+              <td>{{ item.product.name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ item.price }}</td>
+              <td>{{ item.color|default:"-" }}</td>
+              <td>{{ item.size|default:"-" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if order.status == 'Delivered' %}
+        <div class="text-end mt-3">
+          <a href="{% url 'reorder' order.id %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-repeat"></i> Reorder
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+        </div>
+      {% else %}
+        <div class="text-center text-muted mt-5">
+          <p>You haven't placed any orders yet.</p>
+          <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">Shop Now</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const summaries = document.querySelectorAll('.order-summary');
+    const detailPanels = document.querySelectorAll('.order-details');
+
+    summaries.forEach(summary => {
+      summary.addEventListener('click', () => {
+        const id = summary.getAttribute('data-order-id');
+
+        // Remove previous active states
+        summaries.forEach(s => s.classList.remove('active'));
+        detailPanels.forEach(panel => panel.classList.add('d-none'));
+
+        // Activate current
+        summary.classList.add('active');
+        document.getElementById(`order-${id}`).classList.remove('d-none');
+      });
+    });
+
+    // Auto select the first order if available
+    if (summaries.length > 0) {
+      summaries[0].click();
+    }
+  });
+</script>
+
+{% include 'includes/footer.html' %}
+{% endblock %}

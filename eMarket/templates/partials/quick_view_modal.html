@@ -1,0 +1,22 @@
+<div class="row g-4">
+  <div class="col-md-6">
+    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded">
+  </div>
+  <div class="col-md-6">
+    <h5 class="fw-bold">{{ product.name }}</h5>
+    <p class="mb-2"><strong>Price:</strong> PKR {{ product.base_price }}</p>
+    <p class="mb-2"><strong>Brand:</strong> {{ product.brand }}</p>
+    <p class="mb-2"><strong>Category:</strong> {{ product.category.name }}</p>
+    <p class="mb-2"><strong>Vendor:</strong> {{ product.vendor.business_name }}</p>
+    {% if product.average_rating %}
+    <p class="mb-2"><strong>Rating:</strong> ★ {{ product.average_rating }} / 5</p>
+    {% endif %}
+    <form method="post" action="{% url 'add_to_cart' %}">
+      {% csrf_token %}
+      <input type="hidden" name="quantity" value="1">
+      <button type="submit" class="btn btn-danger mt-3">
+        <i class="fas fa-cart-plus me-1"></i> Add to Cart
+      </button>
+    </form>
+  </div>
+</div>

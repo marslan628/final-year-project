@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Manage Orders | eMarket{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: white;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    height: 100%;
+    min-height: 100vh;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .order-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .order-actions {
+    margin-top: 10px;
+  }
+
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+          <img 
+            src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+            alt="User Image" 
+            class="user-img"
+          >
+          <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+{% else %}
+  <p class="text-muted">First login detected</p>
+{% endif %}
+
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <h2 class="mb-4">All Customer Orders</h2>
+
+      <!-- Filters -->
+      <form method="get" class="d-flex flex-wrap gap-2 mb-4">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by name or email" style="max-width: 250px;">
+        <select name="status" class="form-select" style="max-width: 200px;">
+          <option value="">All Statuses</option>
+          <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+          <option value="Processing" {% if status_filter == 'Processing' %}selected{% endif %}>Processing</option>
+          <option value="Shipped" {% if status_filter == 'Shipped' %}selected{% endif %}>Shipped</option>
+          <option value="Delivered" {% if status_filter == 'Delivered' %}selected{% endif %}>Delivered</option>
+        </select>
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+        <a href="?{% if query %}q={{ query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}export=csv" class="btn btn-outline-success">Export CSV</a>
+      </form>
+
+      {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+          <div class="order-header">Order #{{ order.id }} - {{ order.created_at|date:"M d, Y" }}</div>
+          <p><strong>Customer:</strong> {{ order.full_name }} ({{ order.email }})</p>
+          <ul class="mb-2">
+            {% for item in order.items.all %}
+              <li>
+                <strong>{{ item.product.name }}</strong> — Qty: {{ item.quantity }} — ${{ item.price }}
+              </li>
+            {% endfor %}
+          </ul>
+          <p><strong>Total:</strong> PKR {{ order.total_amount }}</p>
+          <p><strong>Status:</strong> {{ order.status }}</p>
+          <div class="order-actions">
+            <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-sm btn-outline-info">Complete Details</a>
+          </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        <nav class="mt-4">
+          <ul class="pagination">
+            {% if orders.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}&q={{ query }}&status={{ status_filter }}">Previous</a></li>
+            {% endif %}
+            {% for num in orders.paginator.page_range %}
+              <li class="page-item {% if orders.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}&q={{ query }}&status={{ status_filter }}">{{ num }}</a>
+              </li>
+            {% endfor %}
+            {% if orders.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}&q={{ query }}&status={{ status_filter }}">Next</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% else %}
+        <p>No orders found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{%include 'includes/footer.html'%}
+{% endblock %}

@@ -1,0 +1,18 @@
+Dear {{ vendor.business_name }},
+
+We regret to inform you that your withdrawal request of PKR {{ amount|floatformat:2 }} has been rejected.
+
+Details:
+- Amount: PKR {{ amount|floatformat:2 }}
+- Status: Rejected
+- Date: {{ timestamp|date:"Y-m-d H:i" }}
+
+This may be due to missing or invalid bank details, policy issues, or other account-related concerns.
+
+If you need further assistance, feel free to contact our support team.
+
+Thank you for your continued trust in eMarket.
+
+Best regards,  
+eMarket Support  
+{{ settings.DEFAULT_FROM_EMAIL }}

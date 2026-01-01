@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Bank Details | Admin Panel{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: #fff;
+    padding: 25px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .sidebar .nav-link {
+    display: block;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 3px solid #dee2e6;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: none;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+          <img src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" alt="User Image" class="user-img">
+          <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+{% else %}
+  <p class="text-muted">First login detected</p>
+{% endif %}
+
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <div class="card p-4">
+        <h4 class="mb-4">Edit Bank Details – {{ vendor.business_name }}</h4>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="mb-3">
+              <label for="{{ form.bank_name.id_for_label }}" class="form-label">Bank Name</label>
+              {{ form.bank_name }}
+              {% if form.bank_name.errors %}
+                <div class="text-danger">{{ form.bank_name.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.account_holder_name.id_for_label }}" class="form-label">Account Holder Name</label>
+              {{ form.account_holder_name }}
+              {% if form.account_holder_name.errors %}
+                <div class="text-danger">{{ form.account_holder_name.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.account_number.id_for_label }}" class="form-label">Account Number</label>
+              {{ form.account_number }}
+              {% if form.account_number.errors %}
+                <div class="text-danger">{{ form.account_number.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.swift_code.id_for_label }}" class="form-label">SWIFT Code</label>
+              {{ form.swift_code }}
+              {% if form.swift_code.errors %}
+                <div class="text-danger">{{ form.swift_code.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'vendor_withdrawal_preferences' %}" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include 'includes/footer.html' %}
+{% endblock %}

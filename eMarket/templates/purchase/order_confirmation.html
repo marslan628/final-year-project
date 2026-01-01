@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .email-container {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      border-bottom: 2px solid #00bcd4;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .footer {
+      border-top: 1px solid #ddd;
+      margin-top: 30px;
+      padding-top: 10px;
+      font-size: 13px;
+      color: #888;
+      text-align: center;
+    }
+    h2 {
+      color: #00bcd4;
+    }
+    .details {
+      margin-bottom: 20px;
+    }
+    .details p {
+      margin: 5px 0;
+    }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .items-table th, .items-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .items-table th {
+      background-color: #00bcd4;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h2>Thank you for your order, {{ full_name }}!</h2>
+    </div>
+
+    <p>Your order <strong>#{{ order.id }}</strong> has been placed successfully. Below are your order details:</p>
+
+    <div class="details">
+      <p><strong>Email:</strong> {{ order.email }}</p>
+      <p><strong>Phone:</strong> {{ order.phone }}</p>
+      <p><strong>Shipping Address:</strong> {{ order.address }}, {{ order.city }}, {{ order.zip_code }}</p>
+    </div>
+
+   {% if items %}
+  <h3>Items Ordered:</h3>
+  <table class="items-table">
+    <tr>
+      <th>Product</th>
+      <th>Color</th>
+      <th>Size</th>
+      <th>Qty</th>
+      <th>Price</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.product.name }}</td>
+      <td>{{ item.color }}</td>
+      <td>{{ item.size }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>PKR {{ item.price|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>No items found in your order.</p>
+{% endif %}
+
+
+    <p><strong>Total Amount:</strong> PKR {{ order.total_amount }}</p>
+
+    <div class="footer">
+      Thank you for shopping with <strong>eMarket</strong>!<br>
+      We’ll notify you when your order ships.
+    </div>
+  </div>
+</body>
+</html>

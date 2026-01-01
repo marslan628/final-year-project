@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Receipt</title>
+  <style>
+    @media print {
+      body {
+        width: {{ width }}mm;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        margin: 0;
+      }
+      .no-print { display: none; }
+    }
+
+    body {
+      width: {{ width }}mm;
+      margin: 0 auto;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      background: #fff;
+      color: #000;
+    }
+
+    .receipt {
+      padding: 10px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .header {
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .sub-text {
+      font-size: 10px;
+      color: #555;
+      margin-bottom: 15px;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #999;
+      margin: 10px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 4px 0;
+      font-size: 10px;
+    }
+
+    th {
+      font-weight: bold;
+      border-bottom: 1px solid #ddd;
+    }
+
+    td {
+      border-bottom: 1px solid #f1f1f1;
+    }
+
+    .total {
+      font-weight: bold;
+      font-size: 12px;
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    .qr, .barcode {
+      display: block;
+      margin: 15px auto;
+    }
+
+    .footer {
+      font-size: 10px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .footer p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body onload="window.print()">
+  <div class="receipt">
+    <div class="center">
+      <div class="header">eMarket</div>
+      <div class="sub-text">Thank you for your purchase!</div>
+    </div>
+
+    <hr>
+
+    <p><strong>Order ID:</strong> {{ order.id }}</p>
+    <p><strong>Date:</strong> {{ order.created_at }}</p>
+    <p><strong>Customer:</strong> {{ order.full_name }}</p>
+
+    <hr>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th style="text-align:right;">Qty</th>
+          <th style="text-align:right;">Price</th>
+          <th style="text-align:right;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td style="text-align:right;">{{ item.quantity }}</td>
+          <td style="text-align:right;">{{ item.price }}</td>
+          <td style="text-align:right;">{{ item.total_price }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <hr>
+    <p class="total">Total: {{ order.total_amount }}</p>
+
+    {% if qr_code_url %}
+      <img src="{{ qr_code_url }}" class="qr" width="100" alt="QR Code">
+    {% endif %}
+    {% if barcode_url %}
+      <img src="{{ barcode_url }}" class="barcode" width="150" alt="Barcode">
+    {% endif %}
+
+    <div class="footer">
+      <p>Scan for order tracking</p>
+      <p>Powered by eMarket</p>
+    </div>
+  </div>
+</body>
+</html>

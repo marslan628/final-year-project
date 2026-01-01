@@ -1,0 +1,93 @@
+{% load static %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
+<!-- Bootstrap 5 (CDN) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Animate on Scroll -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<style>
+  .hero-section {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                url('{% static "images/home-banner.png" %}') center center / cover no-repeat;
+    border-radius: 1rem;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    color: white;
+    font-family: 'Poppins', 'Inter', sans-serif;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+  }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: #e2e2e2;
+    margin-top: 1rem;
+  }
+
+  .hero-btn {
+    background-color: #ff4d4f;
+    color: #fff;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 0.6rem;
+    border: none;
+    margin-top: 2rem;
+    box-shadow: 0 6px 20px rgba(255, 77, 79, 0.4);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .hero-btn:hover {
+    background-color: #d9363a;
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2rem;
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+    }
+
+    .hero-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section my-5 shadow-sm">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-7 text-white" data-aos="fade-up">
+        <h1 class="hero-title">Discover the Best Deals<br>in One Place</h1>
+        <p class="hero-desc">Shop top-quality products with unbeatable prices across electronics, fashion, and more. Fast delivery & secure checkout.</p>
+        <a href="#" class="btn hero-btn" style="background-color:#BB2D3B">
+          <i class="fas fa-shopping-bag me-2"></i> Start Shopping
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AOS Init Script -->
+<script>
+  AOS.init({
+    duration: 1000,
+    once: true
+  });
+</script>
+
+<!-- Font Awesome for icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

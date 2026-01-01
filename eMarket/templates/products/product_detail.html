@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name|default:"Product Details" }} | Shop Easy{% endblock %}
+{% load widget_tweaks %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- Product Image -->
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top rounded-4" style="object-fit: cover; height: 100%;">
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4 p-4 h-100 d-flex flex-column justify-content-between">
+          <div>
+            <h2 class="fw-bold">{{ product.name }}</h2>
+            <p class="text-muted">{{ product.short_details }}</p>
+            <h4 class="text-primary mb-3"><span id="product-price">Rs {{ product.base_price }}</span></h4>
+
+            <ul class="list-group list-group-flush mb-4">
+              <li class="list-group-item"><strong>Category:</strong> {{ product.category.name }}</li>
+              <li class="list-group-item"><strong>Stock:</strong> {{ product.stock }} Units</li>
+              <li class="list-group-item"><strong>Brand:</strong> {{ product.brand }}</li>
+              <li class="list-group-item"><strong>Vendor:</strong> {{ product.vendor.business_name }}</li>
+            </ul>
+          </div>
+
+          <!-- Add to Cart -->
+          <form method="post" action="{% url 'add_to_cart' %}">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Quantity</label>
+                <input type="number" name="quantity" min="1" value="1" class="form-control rounded-pill shadow-sm">
+              </div>
+
+              {% if product.color_variants.exists %}
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Color</label>
+                <select name="color_id" id="color-select" class="form-select rounded-pill shadow-sm" required>
+                  <option value="" disabled selected>Select Color</option>
+                  {% for color in product.color_variants.all %}
+                  <option value="{{ color.id }}">{{ color.color_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+
+              {% if product.size_variants.exists %}
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Size</label>
+                <select name="size_id" id="size-select" class="form-select rounded-pill shadow-sm" required>
+                  <option value="" disabled selected>Select Size</option>
+                  {% for size in product.size_variants.all %}
+                  <option value="{{ size.id }}">{{ size.size_label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 rounded-pill mt-2 shadow">
+              <i class="fas fa-cart-plus me-1"></i>Add to Cart
+            </button>
+          </form>
+
+          <hr class="my-4">
+
+          <button class="btn btn-outline-dark rounded-pill w-100" data-bs-toggle="modal" data-bs-target="#askModal">
+            <i class="fas fa-question-circle me-2"></i>Ask a Question
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ask a Question Modal -->
+    <div class="modal fade" id="askModal" tabindex="-1" aria-labelledby="askModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="{% url 'ask_question' %}">
+            {% csrf_token %}
+            <div class="modal-header">
+              <h5 class="modal-title">Ask a Question</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Product</label>
+                <input type="text" name="product_name" class="form-control" value="{{ product.name }}" readonly>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Your Email</label>
+                <input type="email" name="email" class="form-control" required placeholder="you@example.com">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Your Question</label>
+                <textarea name="question" class="form-control" rows="4" required></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-primary">Send Question</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="card mt-5 p-4 border-0 rounded-4 shadow-sm bg-white">
+      <h4 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Description</h4>
+      <p class="text-muted">{{ product.description|linebreaks }}</p>
+    </div>
+
+    <!-- Customer Reviews -->
+    <div class="mt-5">
+      <h4 class="fw-bold mb-3"><i class="fas fa-comments me-2 text-primary"></i>Customer Reviews</h4>
+      {% if product.reviews.exists %}
+        {% for review in product.reviews.all %}
+        <div class="card mb-3 border-0 rounded-4 shadow-sm">
+          <div class="card-body">
+            <h6 class="card-title">
+              <i class="fas fa-user-circle me-2"></i>{{ review.user.username }}
+              <span class="float-end text-warning">
+                {% for i in "12345"|slice:":review.rating" %}<i class="fas fa-star"></i>{% endfor %}
+                {% for i in "12345"|slice:"review.rating:" %}<i class="far fa-star"></i>{% endfor %}
+              </span>
+            </h6>
+            <p class="card-text">{{ review.comment }}</p>
+            <small class="text-muted">Reviewed on {{ review.created_at|date:"M d, Y" }}</small>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <p class="text-muted">No reviews yet. Be the first to review!</p>
+      {% endif %}
+    </div>
+
+    <!-- Submit Review -->
+    {% if user.is_authenticated %}
+    <div class="mt-5">
+      <div class="p-4 rounded-4 shadow-sm bg-white border">
+        <h4 class="fw-bold mb-4 text-primary text-center"><i class="fas fa-pen me-2"></i>Leave a Review</h4>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Your Rating</label>
+            {{ review_form.rating|add_class:"form-select rounded-pill border-primary shadow-sm" }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Your Comment</label>
+            {{ review_form.comment|add_class:"form-control rounded-4 border-primary shadow-sm" }}
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow">
+              <i class="fas fa-paper-plane"></i> Submit Review
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Related Products -->
+    <h3 class="mt-5 mb-4 text-center fw-bold"><i class="fas fa-layer-group me-2 text-primary"></i>Related Products</h3>
+    <div class="row">
+      {% for related_product in related_products %}
+      <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100 border-0 rounded-4">
+          <a href="{{ related_product.get_absolute_url }}" class="text-decoration-none text-dark">
+            <img src="{{ related_product.image.url }}" class="card-img-top" alt="{{ related_product.name }}" style="height: 200px; object-fit: cover;">
+            <div class="card-body">
+              <h5 class="card-title">{{ related_product.name }}</h5>
+              <p class="text-muted mb-1"><i class="fas fa-tags"></i> {{ related_product.category.name }}</p>
+              <span class="badge bg-info text-dark mb-2">{{ related_product.brand }}</span>
+              <p class="text-muted small">{{ related_product.description|truncatechars:100 }}</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center">
+        <p class="text-muted">No related products available.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Dynamic Price Script -->
+<script>
+  const variantMap = {{ variant_price_map|safe }};
+  const priceDisplay = document.getElementById('product-price');
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const sizeSelect = document.getElementById('size-select');
+    const colorSelect = document.getElementById('color-select');
+
+    function updatePrice() {
+      const size = sizeSelect?.value;
+      const color = colorSelect?.value;
+      const key = `${size}_${color}`;
+      if (variantMap[key]) {
+        priceDisplay.textContent = variantMap[key];
+      } else {
+        priceDisplay.textContent = "Rs {{ product.base_price }}";
+      }
+    }
+
+    sizeSelect?.addEventListener('change', updatePrice);
+    colorSelect?.addEventListener('change', updatePrice);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Track Your Order{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: white;
+    height: 100%%;
+    position: sticky;
+    top: 0;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .card-metric {
+    border: none;
+    border-radius: 10px;
+    padding: 25px 20px;
+    text-align: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+  .dashboard-cards .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out;
+  }
+  .dashboard-cards .card:hover {
+    transform: translateY(-3px);
+  }
+   .timeline {
+    list-style: none;
+    padding-left: 0;
+    position: relative;
+  }
+
+  .timeline:before {
+    content: '';
+    position: absolute;
+    left: 18px;
+    width: 2px;
+    height: 100%;
+    background: #dee2e6;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 20px;
+  }
+
+  .timeline-item:before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #BB2D3B;
+  }
+
+  .status-btns button {
+    margin-right: 10px;
+  }
+  
+</style>
+<div class="container-fluid">
+  <div class="row">
+    <!-- User Sidebar -->
+    <div class="col-md-3 sidebar">
+      <div class="text-center mb-4">
+        <img src="{% static 'images/default-user.png' %}" alt="User Image" class="user-img mb-2">
+        <h5>{{ request.user.username }}</h5>
+        <p class="text-muted small">{{ request.user.email }}</p>
+        <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+      </div>
+      <hr>
+      {% include 'includes/sidebar_vendor.html' %}
+    </div>   
+    <!-- Right Content Area -->
+    
+    <div class="col-md-9 mt-4 mt-md-5">
+
+      <div class="card shadow rounded-4 border-0">
+        <div class="card-header  text-white py-3 rounded-top-4" style="background-color:#BB2D3B">
+          <h4 class="mb-0"><i class="bi bi-truck me-2"></i>Track Your Order</h4>
+        </div>
+        <div class="card-body">
+
+          <!-- Search Form -->
+          <form method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="query" class="form-label fw-semibold">Order ID or Email</label>
+              <input type="text" name="query" class="form-control shadow-sm" placeholder="Enter Order ID or Email" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" style="background-color:#BB2D3B">Track Order</button>
+          </form>
+
+          <!-- If order found -->
+          {% if order %}
+          <div class="border-top pt-3">
+            <h5 class="fw-semibold mb-3">Order Details</h5>
+            <ul class="list-group mb-3">
+              <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
+              <li class="list-group-item"><strong>Customer:</strong> {{ order.full_name }}</li>
+              <li class="list-group-item"><strong>Email:</strong> {{ order.email }}</li>
+              <li class="list-group-item"><strong>Phone:</strong> {{ order.phone }}</li>
+              <li class="list-group-item"><strong>Status:</strong> {{ order.status }}</li>
+              <li class="list-group-item"><strong>Total:</strong> PKR {{ order.total_amount }}</li>
+              <li class="list-group-item"><strong>Placed on:</strong> {{ order.created_at|date:"F d, Y" }}</li>
+            </ul>
+
+            <h5 class="fw-semibold mb-3">Shipment Info</h5>
+            <ul class="list-group mb-3">
+              <li class="list-group-item"><strong>Courier:</strong> {{ order.courier|default:"N/A" }}</li>
+              <li class="list-group-item"><strong>Tracking Number:</strong> {{ order.tracking_number|default:"N/A" }}</li>
+              <li class="list-group-item"><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|date:"F d, Y" }}</li>
+            </ul>
+
+            <!-- Progress Bar -->
+            <div class="mb-4">
+              <div class="progress" style="height: 20px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                  style="width: {{ order.progress }}%;" aria-valuenow="{{ order.progress }}" aria-valuemin="0" aria-valuemax="100">
+                  {{ order.status }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Ordered Items -->
+            <h5 class="fw-semibold mb-3">Ordered Items</h5>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Product</th>
+                    <th>Image</th>
+                    <th>Color</th>
+                    <th>Size</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in order.items.all %}
+                  <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>
+                      {% if item.product.image %}
+                      <img src="{{ item.product.image.url }}" width="60" class="rounded" alt="{{ item.product.name }}">
+                      {% else %}
+                      <span class="text-muted">No Image</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ item.color|default:"-" }}</td>
+                    <td>{{ item.size|default:"-" }}</td>
+                    <td>PKR {{ item.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>PKR {{ item.quantity|multiply:item.price }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+            </div>
+              <h5>Order Timeline</h5>
+        <ul class="timeline">
+          <li class="timeline-item"><strong>Placed:</strong> {{ order.created_at|date:"M d, Y H:i A" }}</li>
+          {% if order.shipped_at %}
+          <li class="timeline-item"><strong>Shipped:</strong> {{ order.shipped_at|date:"M d, Y H:i A" }}</li>
+          {% endif %}
+          {% if order.delivered_at %}
+          <li class="timeline-item"><strong>Delivered:</strong> {{ order.delivered_at|date:"M d, Y H:i A" }}</li>
+          {% endif %}
+        </ul>
+            
+          </div>
+
+          <!-- If searched but order not found -->
+          {% elif searched %}
+          <div class="alert alert-warning mt-4" role="alert">
+            <strong>No order found.</strong> Please check your Order ID or Email and try again.
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

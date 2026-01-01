@@ -1,0 +1,121 @@
+<style>
+.vendor-card {
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+.vendor-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+.vendor-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #eee;
+}
+.vendor-card .product-img {
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.vendor-card .rating i {
+  font-size: 0.9rem;
+}
+.badge-position {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+</style>
+
+<section class="py-5 bg-light">
+  <div class="container">
+    <h3 class="fw-bold mb-4">Top Selling Vendors</h3>
+    <div class="row g-4">
+      {% for vendor in top_vendors %}
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="card vendor-card border-0 shadow-sm p-3 h-100" data-bs-toggle="modal" data-bs-target="#vendorModal{{ vendor.id }}">
+          <!-- Badge -->
+          {% if vendor.is_top_rated %}
+            <span class="badge bg-success badge-position">Top Rated</span>
+          {% elif vendor.is_new %}
+            <span class="badge bg-primary badge-position">New Seller</span>
+          {% endif %}
+
+          <!-- Product thumbnails -->
+          <div class="row row-cols-2 g-2 mb-3">
+            {% for product in vendor.products.all|slice:":4" %}
+            <div class="col">
+              <img src="{{ product.image.url }}" class="img-fluid product-img" alt="{{ product.name }}">
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Vendor Info -->
+          <div class="d-flex align-items-center gap-2 justify-content-center mb-1">
+            <img src="{{ vendor.logo.url }}" class="vendor-logo" alt="{{ vendor.business_name }}">
+            <strong>{{ vendor.business_name }}</strong>
+          </div>
+          <p class="mb-1 text-muted small">({{ vendor.products.count }} Products)</p>
+
+          <!-- Rating -->
+          <div class="rating text-warning">
+            {% for i in "12345" %}
+              {% if vendor.rating_float >= i %}
+                <i class="bi bi-star-fill"></i>
+              {% elif vendor.rating_float >= i|add:"-0.5" %}
+                <i class="bi bi-star-half"></i>
+              {% else %}
+                <i class="bi bi-star"></i>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal fade" id="vendorModal{{ vendor.id }}" tabindex="-1" aria-labelledby="vendorModalLabel{{ vendor.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="vendorModalLabel{{ vendor.id }}">{{ vendor.business_name }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="d-flex gap-3 align-items-center mb-3">
+                <img src="{{ vendor.logo.url }}" alt="{{ vendor.business_name }}" class="vendor-logo">
+                <div>
+                  <h5 class="mb-1">{{ vendor.business_name }}</h5>
+                  <p class="text-muted small mb-0">{{ vendor.products.count }} Products</p>
+                </div>
+              </div>
+
+              <p class="mb-2">{{ vendor.description|default:"No description available." }}</p>
+
+              <!-- Sample Products -->
+              <div class="row g-2">
+                {% for product in vendor.products.all|slice:":4" %}
+                <div class="col-3">
+                  <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="btn btn-outline-primary">Visit Vendor Page</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Bootstrap 5 JS (for modal functionality) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

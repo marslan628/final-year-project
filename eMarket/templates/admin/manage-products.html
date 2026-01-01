@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | Products | eMarket{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: white;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    border-radius: 10px;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: #fff;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  .card-summary {
+    background-color: #fff;
+    padding: 20px;
+    border-left: 5px solid #BB2D3B;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+  }
+
+  .filter-bar .form-control,
+  .filter-bar .btn {
+    border-radius: 8px;
+  }
+
+  .table thead th {
+    background-color: #f1f1f1;
+    font-weight: 600;
+  }
+
+  .btn-action {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+
+  .product-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+     <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+           <img 
+        src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+        alt="User Image" 
+        class="user-img"
+      >
+      <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+{% else %}
+  <p class="text-muted">First login detected</p>
+{% endif %}
+
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <!-- Summary Cards -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card-summary">
+            <h6 class="text-muted">Total Products</h6>
+            <h4>{{ total_products }}</h4>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-summary">
+            <h6 class="text-muted">Available Products</h6>
+            <h4>{{ available_products }}</h4>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-summary">
+            <h6 class="text-muted">Unavailable Products</h6>
+            <h4>{{ unavailable_products }}</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <form method="get" class="row align-items-end mb-4 filter-bar g-3">
+        <div class="col-md-5">
+          <label for="vendor" class="form-label">Vendor</label>
+          <select name="vendor" class="form-control">
+            <option value="">All Vendors</option>
+            {% for v in vendors %}
+              <option value="{{ v.id }}" {% if request.GET.vendor == v.id|stringformat:'s' %}selected{% endif %}>{{ v.business_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="status" class="form-label">Status</label>
+          <select name="status" class="form-control">
+            <option value="">All</option>
+            <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Available</option>
+            <option value="unavailable" {% if request.GET.status == 'unavailable' %}selected{% endif %}>Unavailable</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-dark w-100">Filter</button>
+        </div>
+      </form>
+
+      <!-- Product Table -->
+      <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Image</th>
+                <th>Title</th>
+                <th>Vendor</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in page_obj %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                  {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="Product" class="product-img">
+                  {% else %}
+                    <img src="{% static 'images/default-product.png' %}" alt="No Image" class="product-img">
+                  {% endif %}
+                </td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.vendor.business_name }}</td>
+                <td>
+                  {% if product.is_available %}
+                    <span class="badge bg-success">Available</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Unavailable</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <form method="post" action="{% url 'toggle_product_availability' product.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-{{ product.is_available|yesno:'secondary,success' }}">
+                      Mark {{ product.is_available|yesno:'Unavailable,Available' }}
+                    </button>
+                  </form>
+                  <a href="{% url 'admin_edit_product' product.pk %}" class="btn btn-sm btn-warning ms-1">Edit</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted">No products found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- Pagination -->
+          <nav>
+            <ul class="pagination justify-content-center mt-3">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ filter_query }}">Previous</a>
+                </li>
+              {% endif %}
+              <li class="page-item disabled">
+                <a class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
+              </li>
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ filter_query }}">Next</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{%include 'includes/footer.html'%}
+{% endblock %}

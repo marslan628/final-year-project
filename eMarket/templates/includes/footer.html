@@ -1,0 +1,67 @@
+{% load static %}
+<!-- ✅ Footer -->
+<footer class="bg-dark text-white pt-5 pb-4 mt-5">
+  <style>
+    footer * {
+      color: white !important;
+    }
+  </style>
+
+  <div class="container">
+    <div class="row">
+
+      <!-- 🏢 About / Logo -->
+      <div class="col-md-4 mb-4">
+        <a href="{% url 'home' %}" class="d-inline-block mb-3">
+          <img src="{% static 'images/logo.jpg' %}" alt="Logo" width="160" class="rounded">
+        </a>
+        <p class="small">
+          Emarket.pk is your trusted online marketplace providing a wide range of quality products at affordable prices.
+        </p>
+        <div class="d-flex gap-3 mt-3">
+          <a href="https://www.facebook.com/ChoudharyMuhammadArslan"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://www.instagram.com/choudharymuhammadarslan/"><i class="fab fa-instagram"></i></a>
+          <a href="https://wa.me/923229989135"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+
+      <!-- 📌 Quick Links -->
+      <div class="col-md-2 mb-4">
+        <h6 class="text-uppercase fw-semibold mb-3">Quick Links</h6>
+        <ul class="list-unstyled small">
+          <li><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+          <li><a href="{% url 'search_products' %}" class="text-decoration-none">Shop</a></li>
+          <li><a href="{% url 'cart_view' %}" class="text-decoration-none">Cart</a></li>
+          <li><a href="{% url 'checkout' %}" class="text-decoration-none">Checkout</a></li>
+        </ul>
+      </div>
+
+      <!-- 🔗 Useful Links -->
+      <div class="col-md-3 mb-4">
+        <h6 class="text-uppercase fw-semibold mb-3">Useful Links</h6>
+        <ul class="list-unstyled small">
+          <li><a href="#" class="text-decoration-none">About Us</a></li>
+          <li><a href="#" class="text-decoration-none">Terms & Conditions</a></li>
+          <li><a href="#" class="text-decoration-none">Privacy Policy</a></li>
+          <li><a href="#" class="text-decoration-none">Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- 📞 Contact Info -->
+      <div class="col-md-3 mb-4">
+        <h6 class="text-uppercase fw-semibold mb-3">Contact Us</h6>
+        <p class="small mb-1"><i class="fas fa-phone-alt me-2"></i>+92 325 9378291</p>
+        <p class="small mb-1"><i class="fas fa-envelope me-2"></i>contact@emarket.pk</p>
+        <p class="small"><i class="fas fa-map-marker-alt me-2"></i>Liaquatpur, Pakistan</p>
+      </div>
+
+    </div>
+
+    <hr class="border-secondary mt-4">
+
+    <!-- 🔒 Copyright -->
+    <div class="text-center small">
+      &copy; {{ year|default:2025 }} Emarket.pk. All rights reserved.
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Vendor Withdrawals | Admin Panel{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: #fff;
+    padding: 25px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .sidebar .nav-link {
+    display: block;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 3px solid #dee2e6;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: none;
+  }
+  .table th, .table td {
+    vertical-align: middle;
+    font-size: 0.95rem;
+  }
+  .badge {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+  }
+  .badge-pending { background-color: #ffc107; color: #212529; }
+  .badge-approved { background-color: #198754; color: #fff; }
+  .badge-rejected { background-color: #dc3545; color: #fff; }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+          <img src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" alt="User Image" class="user-img">
+          <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+{% else %}
+  <p class="text-muted">First login detected</p>
+{% endif %}
+
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="mb-0">Vendor Withdrawal Requests</h4>
+          <div>
+            <a href="{% url 'export_withdrawals_csv' %}" class="btn btn-outline-success btn-sm me-2"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</a>
+            <a href="{% url 'export_withdrawals_pdf' %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-pdf"></i> PDF</a>
+          </div>
+        </div>
+
+        <!-- Filter Form -->
+        <form method="get" class="row g-2 mb-3">
+          <div class="col-md-5">
+            <input type="text" name="search" class="form-control" placeholder="Search vendor name or username..." value="{{ search_query }}">
+          </div>
+          <div class="col-md-4">
+            <select name="status" class="form-select">
+              <option value="">All Statuses</option>
+              <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+              <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
+              <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-primary w-100" type="submit"><i class="bi bi-filter"></i> Filter</button>
+          </div>
+        </form>
+
+        <!-- Messages -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Table -->
+        {% if withdrawals %}
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle text-nowrap">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Vendor</th>
+                <th>Bank Details</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Requested</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for withdrawal in withdrawals %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ withdrawal.vendor.user.username }}</td>
+                <td>
+                  <strong>Bank:</strong> {{ withdrawal.vendor.bank_name }}<br>
+                  <strong>Account #:</strong> {{ withdrawal.vendor.account_number }}<br>
+                  <strong>Balance:</strong> PKR {{ withdrawal.vendor.available_balance }}
+                </td>
+                <td>PKR {{ withdrawal.amount }}</td>
+                <td>
+                  <span class="badge 
+                    {% if withdrawal.status == 'Approved' %}badge-approved
+                    {% elif withdrawal.status == 'Rejected' %}badge-rejected
+                    {% else %}badge-pending{% endif %}">
+                    {{ withdrawal.status }}
+                  </span>
+                </td>
+                <td>{{ withdrawal.requested_at|date:"M d, Y" }}</td>
+                <td>
+                  {% if withdrawal.status == 'Pending' %}
+                    <button type="button" class="btn btn-success btn-sm mb-1" data-bs-toggle="modal" data-bs-target="#confirmModal"
+                      data-action-url="{% url 'admin_approve_withdrawal' withdrawal.id %}"
+                      data-action-type="Approve"
+                      data-vendor="{{ withdrawal.vendor.user.username }}"
+                      data-amount="{{ withdrawal.amount }}">Approve</button>
+
+                    <button type="button" class="btn btn-danger btn-sm mb-1" data-bs-toggle="modal" data-bs-target="#confirmModal"
+                      data-action-url="{% url 'admin_reject_withdrawal' withdrawal.id %}"
+                      data-action-type="Reject"
+                      data-vendor="{{ withdrawal.vendor.user.username }}"
+                      data-amount="{{ withdrawal.amount }}">Reject</button>
+                  {% endif %}
+                  <a href="{% url 'admin_edit_withdrawal' withdrawal.id %}" class="btn btn-primary btn-sm mb-1">Edit</a>
+                  <form action="{% url 'admin_delete_withdrawal' withdrawal.id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if withdrawals.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ withdrawals.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}">Previous</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for num in withdrawals.paginator.page_range %}
+              <li class="page-item {% if withdrawals.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}&search={{ search_query }}&status={{ status_filter }}">{{ num }}</a>
+              </li>
+            {% endfor %}
+
+            {% if withdrawals.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ withdrawals.next_page_number }}&search={{ search_query }}&status={{ status_filter }}">Next</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% else %}
+          <p class="text-center text-muted mt-4">No withdrawal requests found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="confirmModalLabel">Confirm Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" id="confirmActionForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p><strong>Vendor:</strong> <span id="modalVendor"></span></p>
+          <p><strong>Amount:</strong> PKR <span id="modalAmount"></span></p>
+          <p class="text-danger fw-semibold">Are you sure you want to <span id="modalActionType"></span> this withdrawal?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Yes, <span id="modalSubmitLabel"></span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const confirmModal = document.getElementById('confirmModal');
+  const form = document.getElementById('confirmActionForm');
+  const vendorField = document.getElementById('modalVendor');
+  const amountField = document.getElementById('modalAmount');
+  const actionTypeField = document.getElementById('modalActionType');
+  const submitLabel = document.getElementById('modalSubmitLabel');
+
+  confirmModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    form.action = button.getAttribute('data-action-url');
+    vendorField.textContent = button.getAttribute('data-vendor');
+    amountField.textContent = button.getAttribute('data-amount');
+    actionTypeField.textContent = button.getAttribute('data-action-type');
+    submitLabel.textContent = button.getAttribute('data-action-type');
+  });
+});
+</script>
+
+{% include 'includes/footer.html' %}
+{% endblock %}

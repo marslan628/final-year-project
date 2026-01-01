@@ -1,0 +1,36 @@
+<form method="post" action="{% url 'add_to_cart' product.id %}" class="mt-4">
+  {% csrf_token %}
+  
+  {% if product.color_variants.exists %}
+  <div class="mb-3">
+    <label for="color" class="form-label fw-bold">Select Color</label>
+    <select class="form-select" id="color" name="color_id" required>
+      <option value="" selected disabled>Choose a color</option>
+      {% for variant in product.color_variants.all %}
+        <option value="{{ variant.id }}">{{ variant.color_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  {% if product.size_variants.exists %}
+  <div class="mb-3">
+    <label for="size" class="form-label fw-bold">Select Size</label>
+    <select class="form-select" id="size" name="size_id" required>
+      <option value="" selected disabled>Choose a size</option>
+      {% for variant in product.size_variants.all %}
+        <option value="{{ variant.id }}">{{ variant.size_label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <div class="mb-3">
+    <label for="quantity" class="form-label fw-bold">Quantity</label>
+    <input type="number" name="quantity" id="quantity" class="form-control" min="1" max="{{ product.stock }}" value="1" required>
+  </div>
+
+  <button type="submit" class="btn btn-warning w-100">
+    <i class="fas fa-cart-plus"></i> Add to Cart
+  </button>
+</form>

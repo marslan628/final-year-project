@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"> 
+
+<div class="container py-5">
+
+    <!-- Hero Section -->
+    <section class="text-center mb-5" data-aos="fade-up">
+        <h1 class="display-4 fw-bold">About <span class="text-primary">eMarket</span></h1>
+        <p class="lead text-muted">Empowering your shopping experience with trust, quality, and speed.</p>
+        <hr class="w-25 mx-auto border-primary">
+    </section>
+
+    <!-- Mission Section -->
+    <section class="row align-items-center my-5">
+        <div class="col-md-6" data-aos="fade-right">
+            <img src="{% static 'images/about-image.jpg' %}" class="img-fluid rounded-4 shadow" alt="Our Mission">
+        </div>
+        <div class="col-md-6" data-aos="fade-left">
+            <h2 class="fw-bold">Our Mission</h2>
+            <p class="text-muted">
+                At <strong>eMarket</strong>, we aim to revolutionize online shopping by delivering high-quality products through a secure, intuitive, and lightning-fast platform. We’re dedicated to elevating the customer journey at every touchpoint.
+            </p>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="row text-center my-5">
+        <h2 class="fw-bold mb-4" data-aos="fade-up">Our Core Values</h2>
+        <div class="col-md-4 mb-4" data-aos="zoom-in" data-aos-delay="100">
+            <div class="p-4 border rounded-4 shadow-sm h-100">
+                <i class="bi bi-shield-lock-fill display-5 text-primary mb-3"></i>
+                <h5 class="fw-semibold">Security</h5>
+                <p class="text-muted small">Your data and transactions are protected with cutting-edge security technologies.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="zoom-in" data-aos-delay="200">
+            <div class="p-4 border rounded-4 shadow-sm h-100">
+                <i class="bi bi-lightning-charge-fill display-5 text-warning mb-3"></i>
+                <h5 class="fw-semibold">Speed</h5>
+                <p class="text-muted small">Experience fast browsing, checkout, and delivery — all in one platform.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4" data-aos="zoom-in" data-aos-delay="300">
+            <div class="p-4 border rounded-4 shadow-sm h-100">
+                <i class="bi bi-heart-fill display-5 text-danger mb-3"></i>
+                <h5 class="fw-semibold">Customer-First</h5>
+                <p class="text-muted small">We prioritize your satisfaction through every product and service we offer.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="text-center my-5">
+        <h2 class="fw-bold mb-4" data-aos="fade-up">Meet Our Team</h2>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <img src="{% static 'images/default-user.png' %}" class="rounded-circle shadow" width="150" height="150" alt="Sarah Ali">
+                <h5 class="mt-3">Muhammad Arslan</h5>
+                <p class="text-muted small">Founder & CEO</p>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <img src="{% static 'images/default-user.png' %}" class="rounded-circle shadow" width="150" height="150" alt="Ahmed Khan">
+                <h5 class="mt-3">Muddasir Ali</h5>
+                <p class="text-muted small">Lead Developer</p>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <img src="{% static 'images/default-user.png' %}" class="rounded-circle shadow" width="150" height="150" alt="Zainab Raza">
+                <h5 class="mt-3">Zainab Raza</h5>
+                <p class="text-muted small">UI/UX Designer</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="text-center bg-primary bg-opacity-10 p-5 rounded-4 shadow-sm mt-5" data-aos="zoom-in-up">
+        <h3 class="fw-bold mb-3">Join the eMarket Revolution</h3>
+        <p class="text-muted mb-4">Be a part of our growing community of smart shoppers and ethical sellers.</p>
+        <a href="{% url 'register_customer' %}" class="btn btn-outline-primary btn-lg px-4">Create Your Account</a>
+    </section>
+
+</div>
+
+<!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 1000,
+    once: true
+  });
+</script>
+
+{% endblock %}

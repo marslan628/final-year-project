@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Withdrawal | Admin Panel{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .card {
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-section {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-submit {
+    background-color: #0d6efd;
+    color: white;
+  }
+
+  .btn-submit:hover {
+    background-color: #0b5ed7;
+  }
+  .sidebar {
+    background: white;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100%;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+          <img 
+            src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+            alt="User Image" 
+            class="img-fluid rounded-circle" 
+            style="width: 100px; height: 100px; object-fit: cover;"
+          >
+          <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+{% else %}
+  <p class="text-muted">First login detected</p>
+{% endif %}
+
+        </div>
+        <hr>
+        {% include 'includes/sidebar_admin.html' %}
+      </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="col-lg-9">
+      <div class="card p-4">
+        <h4 class="mb-4">Edit Withdrawal Request</h4>
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="vendor" class="form-label">Vendor</label>
+            <input type="text" class="form-control" id="vendor" value="{{ withdrawal.vendor.user.username }}" disabled>
+          </div>
+          <div class="mb-3">
+            <label for="bank_name" class="form-label">Bank Name</label>
+            <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ withdrawal.bank_name }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="account_number" class="form-label">Account Number</label>
+            <input type="text" class="form-control" id="account_number" name="account_number" value="{{ withdrawal.account_number }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="amount" class="form-label">Withdrawal Amount</label>
+            <input type="number" class="form-control" id="amount" name="amount" value="{{ withdrawal.amount }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-select" id="status" name="status" required>
+              <option value="Pending" {% if withdrawal.status == 'Pending' %}selected{% endif %}>Pending</option>
+              <option value="Approved" {% if withdrawal.status == 'Approved' %}selected{% endif %}>Approved</option>
+              <option value="Rejected" {% if withdrawal.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-submit">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include 'includes/footer.html' %}
+{% endblock %}

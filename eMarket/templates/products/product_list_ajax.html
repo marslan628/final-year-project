@@ -1,0 +1,120 @@
+<div class="row g-4">
+  {% for product in products %}
+  <div class="col-sm-6 col-lg-4">
+    <div class="card h-100 border-0 shadow-sm product-card">
+      <div class="position-relative">
+        <img src="{{ product.image.url }}" class="card-img-top rounded-top product-img" alt="{{ product.name }}">
+      </div>
+      <div class="card-body d-flex flex-column">
+        <h5 class="fw-bold mb-2">{{ product.name }}</h5>
+        <p class="text-muted mb-1 small">Brand: <span class="text-dark">{{ product.brand }}</span></p>
+        <p class="text-muted small mb-3">{{ product.short_details|truncatewords:15 }}</p>
+        <div class="mt-auto d-flex justify-content-between align-items-center">
+          <span class="fw-semibold text-danger">PKR {{ product.base_price }}</span>
+          <div class="d-flex">
+            <a href="{% url 'product_detail' product.slug %}" class="btn btn-sm btn-outline-primary rounded-pill me-2">
+              <i class="fas fa-cart-plus me-1"></i> Buy
+            </a>
+            <button class="btn btn-sm btn-light border rounded-pill quick-view-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#quickViewModal"
+                    data-name="{{ product.name }}"
+                    data-image="{{ product.image.url }}"
+                    data-brand="{{ product.brand }}"
+                    data-price="{{ product.base_price }}"
+                    data-description="{{ product.short_details|truncatewords:25 }}"
+                    data-url="{% url 'product_detail' product.slug %}">
+              <i class="fas fa-eye me-1"></i> Quick View
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if not products %}
+  <div class="col-12">
+    <div class="alert alert-warning text-center">No products found.</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold" id="quickViewModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body row g-4 align-items-center">
+        <div class="col-md-6">
+          <img id="modalImage" src="" class="img-fluid rounded shadow-sm" alt="Product">
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-muted" id="modalBrand"></h6>
+          <p id="modalDescription" class="mb-3 small"></p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="h5 text-danger" id="modalPrice"></span>
+            <a id="modalBuyLink" href="#" class="btn btn-primary rounded-pill">
+              View & Buy
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .product-card {
+    border-radius: 1rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  .product-img {
+    object-fit: cover;
+    height: 250px;
+    width: 100%;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+
+  .quick-view-btn {
+    font-size: 0.8rem;
+    color: #333;
+  }
+
+  .modal-content {
+    border-radius: 1rem;
+  }
+
+  .modal-body img {
+    max-height: 400px;
+    object-fit: cover;
+  }
+</style>
+
+<script>
+  document.querySelectorAll(".quick-view-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      document.getElementById("quickViewModalLabel").textContent = button.dataset.name;
+      document.getElementById("modalImage").src = button.dataset.image;
+      document.getElementById("modalBrand").textContent = "Brand: " + button.dataset.brand;
+      document.getElementById("modalDescription").textContent = button.dataset.description;
+      document.getElementById("modalPrice").textContent = "PKR " + button.dataset.price;
+      document.getElementById("modalBuyLink").href = button.dataset.url;
+    });
+  });
+</script>

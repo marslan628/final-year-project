@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order History{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: white;
+    height: 100%%;
+    position: sticky;
+    top: 0;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%%;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 sidebar">
+      <div class="text-center mb-4">
+        <img src="{% static 'images/default-user.png' %}" alt="User Image" class="user-img mb-2">
+        <h5>{{ request.user.username }}</h5>
+        <p class="text-muted small">{{ request.user.email }}</p>
+        <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+        {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+      </div>
+      <hr>
+      {% include 'includes/sidebar_vendor.html' %}
+    </div>
+
+    <!-- Content -->
+    <div class="col-md-9 mt-4 mt-md-5">
+      <div class="card shadow rounded-4 border-0">
+        <div class="card-header  text-white py-3 rounded-top-4" style="background-color:#BB2D3B;">
+          <h4 class="mb-0"><i class="bi bi-bag me-2"></i>Your Orders</h4>
+        </div>
+        <div class="card-body">
+
+          <!-- Search Bar -->
+          <form method="get" class="mb-4">
+            <div class="input-group">
+              <input type="text" name="q" class="form-control" placeholder="Search by Order ID or Status..." value="{{ query }}">
+              <button class="btn " style="background-color:#BB2D3B;color:#fff;" type="submit">Search</button>
+            </div>
+          </form>
+
+          {% if orders %}
+            {% for order in orders %}
+            <div class="border p-3 mb-4 rounded shadow-sm">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6><strong>Order #{{ order.id }}</strong></h6>
+                  <p class="mb-1 text-muted">Placed on: {{ order.created_at|date:"F d, Y" }}</p>
+                  <p class="mb-1"><strong>Status:</strong> {{ order.status }}</p>
+                  <p><strong>Total:</strong> PKR {{ order.total_amount }}</p>
+                </div>
+                <div class="text-end">
+                  <a href="{% url 'track_order' %}?query={{ order.id }}" class="btn btn-sm "  style="background-color:#BB2D3B;color:#fff;">Track Order</a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            <nav class="mt-4">
+              <ul class="pagination justify-content-center">
+                {% if orders.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&page={{ orders.previous_page_number }}">Previous</a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link" >Previous</span></li>
+                {% endif %}
+
+                {% for num in orders.paginator.page_range %}
+                  {% if orders.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                  {% elif num > orders.number|add:"-3" and num < orders.number|add:"3" %}
+                    <li class="page-item">
+                      <a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if orders.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&page={{ orders.next_page_number }}">Next</a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link">Next</span></li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% else %}
+            <div class="alert alert-info" role="alert">
+              No orders found matching your search.
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include 'includes/footer.html'%}
+{% endblock %}

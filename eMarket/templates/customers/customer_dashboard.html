@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard | eMarket{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: white;
+    height: 100%;
+    position: sticky;
+    top: 0;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .card-metric {
+    border: none;
+    border-radius: 10px;
+    padding: 25px 20px;
+    text-align: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+  .dashboard-cards .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out;
+  }
+  .dashboard-cards .card:hover {
+    transform: translateY(-3px);
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 sidebar">
+      <div class="text-center mb-4">
+         <img 
+        src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+        alt="User Image" 
+        class="user-img"
+      >
+        <h5 class="mt-2">{{ request.user.username }}</h5>
+        <p class="text-muted small">{{ request.user.email }}</p>
+        <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+  {% endif %}
+      </div>
+      <hr>
+      {% include 'includes/sidebar_user.html' %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9 py-5 px-4">
+      <h3 class="mb-4 fw-bold">My Dashboard</h3>
+
+      <!-- Metrics Row -->
+      <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+          <div class="card card-metric bg-dark">
+            Total Orders
+            <div class="fs-3">{{ total_orders }}</div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="card card-metric bg-warning text-dark">
+            Pending
+            <div class="fs-3">{{ pending_orders }}</div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="card card-metric bg-success">
+            Delivered
+            <div class="fs-3">{{ delivered_orders }}</div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="card card-metric bg-danger">
+            Cancelled
+            <div class="fs-3">{{ cancelled_orders }}</div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-3">
+          <div class="card card-metric bg-info text-dark">
+            Shipped
+            <div class="fs-3">{{ shipped_orders }}</div>
+          </div>
+        </div>
+      </div>
+
+      <h4 class="mb-3">Order History</h4>
+      {% if orders %}
+        <div class="row dashboard-cards">
+          {% for order in orders %}
+            <div class="col-md-6 mb-4">
+              <div class="card p-4 bg-white">
+                <h5 class="text-primary">Order #{{ order.id }}</h5>
+                <p><strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                <p><strong>Status:</strong> 
+                  {% if order.status == 'delivered' %}
+                    <span class="text-success">Delivered</span>
+                  {% elif order.status == 'cancelled' %}
+                    <span class="text-danger">Cancelled</span>
+                  {% elif order.status == 'shipped' %}
+                    <span class="text-info">Shipped</span>
+                  {% else %}
+                    <span class="text-warning text-capitalize">{{ order.status }}</span>
+                  {% endif %}
+                </p>
+                <hr>
+                <h6 class="text-muted">Items:</h6>
+                <ul class="list-group list-group-flush">
+                  {% for item in order.items.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      {{ item.product.name }}
+                      <span class="badge bg-primary rounded-pill">x {{ item.quantity }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center text-muted mt-5">
+          <p>You haven't placed any orders yet.</p>
+          <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">Shop Now</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% include 'includes/footer.html' %}
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | eMarket{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: #fff;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  .form-text {
+    font-size: 0.85rem;
+  }
+
+  .form-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .btn-success {
+    background-color: #198754;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: 10px;
+  }
+
+  .btn-secondary {
+    padding: 10px 20px;
+    border-radius: 10px;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="sidebar">
+        <div class="text-center">
+       <img 
+        src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+        alt="User Image" 
+        class="user-img"
+      > <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small mb-1">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+          {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+{% else %}
+  <p class="text-muted">First login detected</p>
+{% endif %}
+
+        </div>
+        <hr>
+        {% include 'includes/sidebar_vendor.html' %}
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="col-lg-9">
+      <div class="form-container">
+        <h3 class="form-title mb-4">{{ title }}</h3>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row">
+            {% for field in form %}
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-success">{{ title }}</button>
+            <a href="{% url 'vendor_dashboard' %}" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+        <hr>
+         <a href="{% url 'vendor_dashboard' %}" class="bi bi-icon-house btn btn-secondary" style="background-color:#bb2d3b;">Vendor Dashboard</a>
+         
+    <a href="{% url 'product_dashboard' %}" class="btn btn-secondary " style="background-color:#bb2d3b;">Manage Products</a>
+      </div>
+      
+    </div>
+   
+  </div>
+</div>
+{% include 'includes/footer.html' %}
+{% endblock %}

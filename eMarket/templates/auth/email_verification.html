@@ -1,0 +1,8 @@
+Hi {{ user.username }},
+
+Thank you for registering at eMarket.pk!
+
+Please click the link below to activate your account:
+http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+
+If you didn’t register, please ignore this email.

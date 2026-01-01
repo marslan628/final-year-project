@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Update Stock | eMarket{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: #fff;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background-color: #BB2D3B;
+    color: white;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-label {
+    font-weight: 500;
+  }
+
+  .form-control:focus {
+    border-color: #BB2D3B;
+    box-shadow: 0 0 0 0.2rem rgba(187, 45, 59, 0.25);
+  }
+
+  .btn-primary {
+    background-color: #BB2D3B;
+    border-color: #BB2D3B;
+  }
+
+  .btn-primary:hover {
+    background-color: #a02530;
+    border-color: #a02530;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3">
+      <div class="sidebar">
+        <div class="text-center">
+          <img src="{% static 'images/default-user.png' %}" alt="User Image" class="user-img">
+          <h5 class="mt-2">{{ request.user.username }}</h5>
+          <p class="text-muted small mb-1">{{ request.user.email }}</p>
+          <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+                   {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+  {%endif%}
+        </div>
+        <hr>
+        {% include 'includes/sidebar_vendor.html' %}
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom">
+          <h4 class="mb-0">Update Stock for: {{ product.title }}</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="mb-3">
+              <label for="id_stock" class="form-label">Stock Quantity</label>
+              {{ form.stock|add_class:"form-control" }}
+              {{ form.stock.errors }}
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'vendor_dashboard' %}" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">Update Stock</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include 'includes/footer.html' %}
+{% endblock %}

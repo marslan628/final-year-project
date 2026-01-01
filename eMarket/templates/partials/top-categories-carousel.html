@@ -1,0 +1,33 @@
+<!-- Top Categories Carousel -->
+<h2 class="section-title text-center mb-4" data-aos="fade-up">Top Categories</h2>
+<div id="categoryCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    {% for chunk in category_chunks %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="row g-3 justify-content-center">
+          {% for category in chunk %}
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+              <a href="{% url 'category_products' category.slug %}" class="text-decoration-none">
+                <div class="bg-white rounded-4 shadow-sm h-100 text-center p-3 position-relative hover-shadow transition">
+                  <span class="badge position-absolute top-0 end-0 mt-2 me-2 px-2 py-1 small shadow-sm {{ category.badge_color }}">
+                    {{ category.badge }}
+                  </span>
+                  <div class="rounded-circle overflow-hidden mx-auto mb-3" style="width: 80px; height: 80px;">
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="img-fluid object-fit-cover" style="width: 100%; height: 100%;">
+                  </div>
+                  <p class="fw-semibold text-dark m-0">{{ category.name }}</p>
+                </div>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <button class="carousel-control-prev"  type="button" data-bs-target="#categoryCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" style="background-color:#000000"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#categoryCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" style="background-color:#000000"></span>
+  </button>
+</div>

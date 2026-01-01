@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment History | eMarket{% endblock %}
+
+{% block content %}
+<style>
+     body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .sidebar {
+    background: white;
+    height: 100%%;
+    position: sticky;
+    top: 0;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .card-metric {
+    border: none;
+    border-radius: 10px;
+    padding: 25px 20px;
+    text-align: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+  .dashboard-cards .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out;
+  }
+  .dashboard-cards .card:hover {
+    transform: translateY(-3px);
+  }
+  body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-list {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .order-summary {
+    cursor: pointer;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: white;
+    border-radius: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .order-summary:hover, .order-summary.active {
+    background-color: #e8f0fe;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-details {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .badge-status {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
+
+  .order-items li {
+    list-style: none;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .fade-panel {
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+  .card {
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  .user-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+  .payment-method {
+    font-family: monospace;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+</style>
+
+<div class="container-fluid py-4">
+  <div class="row">
+    <!-- User Sidebar -->
+    <div class="col-md-3 sidebar">
+      <div class="text-center mb-4">
+        <img src="{% static 'images/default-user.png' %}" alt="User Image" class="user-img mb-2">
+        <h5>{{ request.user.username }}</h5>
+        <p class="text-muted small">{{ request.user.email }}</p>
+        <p class="small text-muted">Joined: {{ request.user.date_joined|date:"M d, Y" }}</p>
+                 {% if request.user.last_login %}
+  <p class="text-muted">Last Login: {{ request.user.last_login|date:"D, d M Y H:i" }}</p>
+  {% endif %}
+      </div>
+      <hr>
+      {% include 'includes/sidebar_vendor.html' %}
+    </div>
+    <!-- Main Content -->
+    <div class="col-md-9">
+      <h3 class="fw-bold mb-4">Payment History</h3>
+
+      {% if payments %}
+      <div class="table-responsive mb-5">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Order ID</th>
+              <th>Amount</th>
+              <th>Card</th>
+              <th>Status</th>
+              <th>Paid On</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in payments %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>#{{ payment.order.id }}</td>
+              <td>PKR {{ payment.order.total_amount|floatformat:2 }}</td>
+              <td class="payment-method">**** **** **** {{ payment.card_number|slice:"-4:" }}</td>
+              <td>
+                {% if payment.payment_status == "Success" %}
+                  <span class="badge bg-success">Paid</span>
+                {% else %}
+                  <span class="badge bg-danger">{{ payment.payment_status }}</span>
+                {% endif %}
+              </td>
+              <td>{{ payment.order.created_at|date:"M d, Y h:i A" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info">You haven’t made any payments yet.</div>
+      {% endif %}
+
+      <!-- Saved Card Section -->
+      <h4 class="fw-bold mb-3">Saved Payment Method</h4>
+      {% if latest_payment %}
+      <div class="card">
+        <div class="card-body">
+          <p><strong>Card Number:</strong> **** **** **** {{ latest_payment.card_number|slice:"-4:" }}</p>
+          <p><strong>Expiry:</strong> {{ latest_payment.expiry }}</p>
+          <p><strong>CVV:</strong> •••</p>
+          <div class="mt-3">
+            <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#editCardModal">Edit</button>
+            <form method="post" action="{% url 'delete_payment_method' %}" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="payment_id" value="{{ latest_payment.id }}">
+              <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this card?')">Remove</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Card Modal -->
+      <div class="modal fade" id="editCardModal" tabindex="-1" aria-labelledby="editCardModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <form id="editCardForm" method="post" action="{% url 'update_payment_method' %}">
+            {% csrf_token %}
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editCardModalLabel">Edit Card</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">Card Number</label>
+                  <input type="text" name="card_number" id="card_number" class="form-control" required>
+                  <small id="card_type" class="text-muted"></small>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Expiry (MM/YY)</label>
+                  <input type="text" name="expiry" class="form-control" pattern="\d{2}/\d{2}" maxlength="5" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">CVV</label>
+                  <input type="password" name="cvv" class="form-control" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        const form = document.getElementById("editCardForm");
+        form.addEventListener("submit", function(e) {
+          e.preventDefault();
+          const formData = new FormData(form);
+
+          fetch(form.action, {
+            method: "POST",
+            headers: { "X-CSRFToken": formData.get("csrfmiddlewaretoken") },
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert("Card updated successfully!");
+              location.reload();
+            } else {
+              alert("Error: " + data.message);
+            }
+          })
+          .catch(err => console.error("Error:", err));
+        });
+
+        document.getElementById("card_number").addEventListener("input", function () {
+          const num = this.value;
+          let type = "Unknown";
+
+          if (/^4/.test(num)) type = "Visa";
+          else if (/^5[1-5]/.test(num)) type = "MasterCard";
+          else if (/^3[47]/.test(num)) type = "American Express";
+          else if (/^6/.test(num)) type = "Discover";
+
+          document.getElementById("card_type").textContent = "Card Type: " + type;
+        });
+      </script>
+
+      {% else %}
+      <p class="text-muted">No saved payment method.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% include 'includes/footer.html' %}
+{% endblock %}

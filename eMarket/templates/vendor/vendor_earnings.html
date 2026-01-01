@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Vendor Earnings | eMarket{% endblock %}
+
+{% block content %}
+<style>
+    body {
+    background-color: #f4f6f8;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .sidebar {
+    background: white;
+    padding: 30px 20px;
+    border-right: 1px solid #e0e0e0;
+    min-height: 100%;
+  }
+
+  .sidebar .nav-link {
+    padding: 12px 18px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar .nav-link:hover,
+  .sidebar .nav-link.active {
+    background: #BB2D3B;
+    color: white;
+  }
+
+  .user-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dashboard-metric {
+    border-radius: 10px;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-metric h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .dashboard-metric p {
+    font-size: 1.6rem;
+    font-weight: bold;
+  }
+</style>
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="sidebar">
+        {% include 'includes/sidebar_vendor.html' %}
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+      <div class="card shadow-sm p-4">
+        <h4 class="mb-4">Earnings Summary</h4>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="border p-3 rounded bg-light">
+              <h5>Total Earned</h5>
+              <p class="mb-0 fw-bold">PKR {{ vendor.total_earnings }}</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border p-3 rounded bg-light">
+              <h5>Available Balance</h5>
+              <p class="mb-0 fw-bold">PKR {{ vendor.available_balance }}</p>
+            </div>
+          </div>
+        </div>
+
+        <form method="post" onsubmit="return confirmWithdrawal();">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="amount" class="form-label">Withdrawal Amount (PKR)</label>
+            <input type="number" step="0.01" min="0" class="form-control" id="amount" name="amount" required>
+          </div>
+          <button type="submit" class="btn btn-danger">Request Withdrawal</button>
+        </form>
+
+        <!-- Withdrawal History -->
+        <hr>
+        <h5 class="mt-4">Withdrawal History</h5>
+        <table class="table table-sm table-bordered mt-2">
+          <thead>
+            <tr>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Requested At</th>
+              <th>Processed At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for w in withdrawals %}
+            <tr>
+              <td>PKR {{ w.amount }}</td>
+              <td>{{ w.status }}</td>
+              <td>{{ w.requested_at|date:"Y-m-d H:i" }}</td>
+              <td>{{ w.processed_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center">No withdrawals yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmWithdrawal() {
+    const amount = document.getElementById("amount").value;
+    return confirm("Are you sure you want to withdraw PKR" + amount + "?\nBank: {{ vendor.bank_name }}\nAccount: {{ vendor.account_number }}");
+  }
+</script>
+{% include 'includes/footer.html' %}
+{% endblock %}

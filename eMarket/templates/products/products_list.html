@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ category.name }} Products - My Store{% endblock %}
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row">
+
+      <!-- Filters -->
+      <div class="col-lg-3 mb-4">
+        <h5 class="fw-bold mb-3">Filter by Category</h5>
+        <form id="filterForm">
+          {% for category in categories %}
+          <div class="form-check">
+            <input class="form-check-input category-filter" type="checkbox" name="category" value="{{ category.id }}" id="cat{{ category.id }}">
+            <label class="form-check-label" for="cat{{ category.id }}">{{ category.name }}</label>
+          </div>
+          {% endfor %}
+        </form>
+      </div>
+
+      <!-- Products -->
+      <div class="col-lg-9">
+        <div id="productContainer">
+          {% include 'products/product_list_ajax.html' %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  function fetchFilteredProducts() {
+    const selectedCategories = [];
+    $('input[name="category"]:checked').each(function() {
+      selectedCategories.push($(this).val());
+    });
+
+    $.ajax({
+      url: "{% url 'ajax_filter_products' %}",
+      data: {
+        'categories[]': selectedCategories
+      },
+      success: function(data) {
+        $('#productContainer').html(data.html);
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    $('.category-filter').on('change', fetchFilteredProducts);
+  });
+</script>
+{% endblock %}

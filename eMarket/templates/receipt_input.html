@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View Order Receipt</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .receipt-form {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt-form">
+    <h2>View Order Receipt</h2>
+    <form method="get" action="{% url 'receipt_input' %}" onsubmit="event.preventDefault(); redirectToReceipt();">
+      <div class="mb-3">
+        <label for="orderID" class="form-label">Enter Order ID</label>
+        <input type="number" class="form-control" id="orderID" required placeholder="e.g. 1024">
+      </div>
+      <button type="submit" class="btn btn-primary w-100" style="background-color:#BB2D3B; color:#fff:">View Receipt</button>
+    </form>
+    <hr>
+   <h6 class="text-center">Designed by eMarket Team With ❤</h6>
+
+  </div>
+
+  <script>
+    function redirectToReceipt() {
+      const orderId = document.getElementById('orderID').value;
+      if (orderId) {
+        window.location.href = `/receipt/${orderId}/`;
+      }
+    }
+  </script>
+</body>
+</html>
