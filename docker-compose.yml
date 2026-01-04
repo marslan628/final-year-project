@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    container_name: emarket_web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app:cached
+      - static_volume:/app/static
+      - media_volume:/app/media
+    environment:
+      - DJANGO_DEBUG=False
+      - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
+      - DATABASE_NAME=/app/db.sqlite3
+    depends_on: []
+volumes:
+  static_volume:
+  media_volume:

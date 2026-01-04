@@ -1,0 +1,9 @@
+# Set sensible defaults and enforce LF for scripts/configs
+* text=auto
+
+# Enforce LF for shell scripts, Dockerfiles, YAML and Python
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.py text eol=lf
